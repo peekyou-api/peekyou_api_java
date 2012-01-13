@@ -1,17 +1,17 @@
-package peekyou_api;
+package peekyou;
 import java.net.*;
 import java.util.*;
 import java.util.regex.*;
 
-
-
 public class peekyou_api {
 
 	private String api_key;
+	private String app_id;
+	private float api_version=3;//set default api version to use
 	private int frequency=5;//default frequency in seconds
 
 	/**
-	 * Sets the private key.
+	 * Sets the api key.
 	 *
 	 * @param string key
 	 * @return none
@@ -19,6 +19,17 @@ public class peekyou_api {
 	 */
 	public void set_key(String key){
 		this.api_key=key;
+	}
+	
+	/**
+	 * Sets the app id.
+	 *
+	 * @param string key
+	 * @return none
+	 * 									
+	 */
+	public void set_app_id(String id){
+		this.app_id=id;
 	}
 
 	/**
@@ -33,21 +44,50 @@ public class peekyou_api {
 	}
 
 	/**
-	 * Gets url information from peekyou_api(For example http://www.peekyou.com/[username]
+	  * Gets url information from peekyou social audience api for a given url(For example http://twitter/[username]
 	 * 
 	 * @param string url
 	 * @param string type (json,xml)
 	 * @return string representing json,or xml
 	 * 									
 	 */
-	public String get_url(String url,String type){
+	public String get_social_audience_info(String url,String type){
 		type=type.toLowerCase().trim();
+		String result;
 		
 		if(type!="json" && type!="xml")
 			return "Invalid type!!\n";
 	
-		url="http://api.peekyou.com/analytics.php?key="+this.api_key+"&url="+url+"&output="+type+"";	
-        String result;
+		url="http://api.peekyou.com/analytics.php?key="+this.api_key+"&url="+url+"&output="+type+"&app_id="+this.app_id;	
+        
+		while((result=check_status(url,type))=="loading"){
+			
+			try {
+				Thread.sleep(this.frequency);
+			} catch (InterruptedException e) {
+				System.out.println("Error trying to sleep!");
+			}
+		}
+		
+		return result;
+	}
+	
+	/**
+	  * Gets url information from peekyou social consumer api for a given url(For example http://twitter/[username]
+	 * 
+	 * @param string url
+	 * @param string type (json,xml)
+	 * @return string representing json,or xml
+	 * 									
+	 */
+	public String get_social_consumer_info(String url,String type){
+		type=type.toLowerCase().trim();
+		String result;
+		
+		if(type!="json" && type!="xml")
+			return "Invalid type!!\n";
+	
+		url="http://api.peekyou.com/api.php?key="+this.api_key+"&url="+url+"&apiv="+this.api_version+"&output="+type+"&app_id="+this.app_id;	
         
 		while((result=check_status(url,type))=="loading"){
 			
@@ -61,18 +101,7 @@ public class peekyou_api {
 		return result;
 	}
 
-	/**
-	 * For testing purposes used to print out current key
-	 * 
-	 * 
-	 * @return api_key
-	 * 									
-	 */
-	public String echo_key(){
-
-		return this.api_key;
-	}
-
+	
 	/**
 	 * Checks the status return by peekyou api.
 	 * 
